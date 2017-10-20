@@ -1,0 +1,4 @@
+include README.md
+recursive-include octoprint_webnotifications/templates *
+recursive-include octoprint_webnotifications/translations *
+recursive-include octoprint_webnotifications/static *
