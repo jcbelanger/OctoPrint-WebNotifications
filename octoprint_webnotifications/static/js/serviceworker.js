@@ -1,11 +1,13 @@
 self.addEventListener('push', function(event) {
+  var data = event.data.json();
   event.waitUntil(
-    self.registration.showNotification('My Title', {
-      lang: 'en',
-      body: 'Hello World',
-      icon: '/static/img/graph-background.png',
-      //vibrate: [500, 100, 500],
-    })
+    self.registration.showNotification(data.title || 'OctoPrint', 
+      Object.assign(data, {
+        lang: 'en',
+        icon: '/static/img/graph-background.png',
+        timestamp: Math.floor(Date.now())
+      })
+    )
   );
 });
 

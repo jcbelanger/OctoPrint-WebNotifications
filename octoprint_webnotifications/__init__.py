@@ -1,21 +1,39 @@
 # coding=utf-8
-import json
-import octoprint.plugin
-from pywebpush import webpush
-
+import time, os, json, sqlite3, octoprint.plugin
+from contextlib import closing, contextmanager
+from py_vapid import Vapid, b64urlencode
+from pywebpush import webpush, WebPushException
 
         
 class WebNotificationsPlugin(octoprint.plugin.StartupPlugin,
-               octoprint.plugin.TemplatePlugin,
-               octoprint.plugin.SettingsPlugin,
-               octoprint.plugin.AssetPlugin,
-               octoprint.plugin.BlueprintPlugin):
+                octoprint.plugin.ShutdownPlugin,
+                octoprint.plugin.TemplatePlugin,
+                octoprint.plugin.SettingsPlugin,
+                octoprint.plugin.AssetPlugin,
+                octoprint.plugin.BlueprintPlugin):
     
-    def on_after_startup(self):
-        self._logger.info("Hello World! (more: %s)" % self._settings.get(["url"]))
-
-    def get_settings_defaults(self):
-        return dict(url="https://en.wikipedia.org/wiki/Hello_world")
+    def on_startup(self, host, port):
+        self._vapid = Vapid.from_file(self.get_vapid_key_file())
+        self._db = sqlite3.connect(self.get_database_file())
+        self._db.executescript(
+            '''
+            CREATE TABLE IF NOT EXISTS subscriptions (
+                id TEXT NOT NULL PRIMARY KEY,
+                subscription TEXT NOT NULL
+            );
+            '''
+        )
+        self._db.commit()
+    
+    def on_shutdown(self):
+        self._db.close()
+        self._db = None
+    
+    def get_vapid_key_file(self):
+        return os.path.join(self.get_plugin_data_folder(), "private_key.pem")
+    
+    def get_database_file(self):
+        return os.path.join(self.get_plugin_data_folder(), "subscriptions.db")
 
     def get_assets(self):
         return dict(
@@ -24,26 +42,85 @@ class WebNotificationsPlugin(octoprint.plugin.StartupPlugin,
     
     def get_template_vars(self):
         return dict(
-            public_key=self.get_public_key()
+            application_server_key=b64urlencode(self._vapid.public_key.public_numbers().encode_point())
         )
     
     @octoprint.plugin.BlueprintPlugin.route("/push-subscription", methods=["POST"])
     def save_push_subscription(self):
-        from flask import request
+        from flask import request        
         from octoprint.server.api import NO_CONTENT
+
+        subscription = request.get_json()
+        id = subscription["endpoint"]
+        self.save_push_subscription_db(id, subscription)
+        self.notify_one(id, title="Test Notification", body="It works!")
         
-        webpush(
-            subscription_info=request.get_json(),
-            data=json.dumps(dict(
-                foo="bar"
-            )),
-            vapid_private_key=self.get_private_key(),
+        return NO_CONTENT
+    
+    def save_push_subscription_db(self, id, subscription):
+        self._db.execute(
+            "INSERT OR REPLACE INTO subscriptions (id, subscription) VALUES (?, ?)", 
+            (id, json.dumps(subscription))
+        )
+        self._db.commit()
+        self._logger.info("New subscription!")
+    
+    def delete_push_subscription_db(self, id):
+        self._db.execute("DELETE FROM subscriptions VALUES id = ?)", (id,))
+        self._db.commit()
+        self._logger.info("Deleted subscription!")      
+
+    @contextmanager
+    def get_push_subscriptions_db(self):
+        with closing(self._db.cursor()) as cur:
+            rows = cur.execute("SELECT subscription FROM subscriptions")
+            yield (json.loads(row[0]) for row in rows)
+    
+    def get_push_subscription_db(self, id):
+        with closing(self._db.cursor()) as cur:
+            cur.execute("SELECT subscription FROM subscriptions WHERE id = ?", (id,))
+            result = cur.fetchone()
+            subscription = result[0]
+            return json.loads(subscription)
+    
+    def get_web_push_args(self, *args, **kwargs):
+        notification = dict(
+            title="OctoPrint",
+            lang="en",
+            icon="/static/img/graph-background.png",
+            timestamp=time.time(),
+        )
+        notification.update(kwargs)
+        return dict(
+            data=json.dumps(notification),
+            vapid_private_key=self.get_vapid_key_file(),
             vapid_claims=dict(
                 sub="mailto:jcbelanger@users.noreply.github.com"
             )
         )
         
-        return NO_CONTENT
+    def notify_one(self, id, *args, **kwargs):
+        web_push_args = self.get_web_push_args(*args, **kwargs)
+        sub = self.get_push_subscription_db(id)
+        try:
+            webpush(subscription_info=sub, **web_push_args)
+            return True
+        except WebPushException as err:
+            self._logger.error(err)
+            return False
+        
+    
+    def notify_all(self, *args, **kwargs):
+        web_push_args = self.get_web_push_args(*args, **kwargs)
+        all_success = True
+        with self.get_push_subscriptions_db() as subs:
+            for sub in subs:
+                try:
+                    webpush(subscription_info=sub, **web_push_args)
+                except WebPushException as err:
+                    self._logger.error(err)
+                    all_success = False
+        return all_success
 
     def is_blueprint_protected(self):
         return False
@@ -60,15 +137,6 @@ class WebNotificationsPlugin(octoprint.plugin.StartupPlugin,
 				pip="https://github.com/jcbelanger/OctoPrint-WebNotifications/archive/{target_version}.zip"
 			)
 		)
-        
-    def get_public_key(self):
-        #todo generate keys on install
-        return "BBDoBnbKU0ex3GwNprJ0xuOhWCCU5ImO3lexrPpIv2-dUHDn-BtCJMXzf-J32Y1YpPKRyRhVx8tknmLf9bmQn28"
-
-    def get_private_key(self):
-        #todo generate keys on install
-        return "1Kx0uosM1wWXXEzJnJSNL0UkNJZhIzk_tnZTB0Zdy1E"
-
 
 
 def __plugin_load__():

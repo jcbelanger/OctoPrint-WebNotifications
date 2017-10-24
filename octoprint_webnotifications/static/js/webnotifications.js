@@ -1,10 +1,4 @@
-/*
- * View model for OctoPrint-WebNotifications
- *
- * Author: Josh Belanger
- * License: AGPLv3
- */ 
-$(function() {
+(function() {
   
   function askNotificationPermission() {
     return new Promise(function(resolve, reject) {
@@ -24,13 +18,23 @@ $(function() {
   function subscribeToPush() {
     return navigator.serviceWorker.register(WebNotifications.SERVICE_WORKER_JS)
       .then(function(registration) {
-        return registration; //navigator.serviceWorker.ready
+        return registration; //TODO find workaround for chrome's navigator.serviceWorker.ready
       })
       .then(function(registration) {
-        return registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(WebNotifications.VAPID_PUBLIC_KEY)
-        });
+          var subscriptionOptions = {
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(WebNotifications.APPLICATION_SERVER_KEY)
+          }
+          return registration.pushManager.subscribe(subscriptionOptions)
+            .catch(function() {
+              return registration.pushManager.getSubscription()
+                .then(function(subscription) {
+                  return subscription && subscription.unsubscribe()
+                })
+                .then(function() {
+                  return registration.pushManager.subscribe(subscriptionOptions);
+                });
+            });
       });
   }
   
@@ -81,4 +85,4 @@ $(function() {
         console.error('ServiceWorker registration failed: ', err);
       });
   }
-});
+})();
