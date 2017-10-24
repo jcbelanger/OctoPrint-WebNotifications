@@ -1,6 +1,8 @@
 # coding=utf-8
-
+import json
 import octoprint.plugin
+from pywebpush import webpush
+
 
         
 class WebNotificationsPlugin(octoprint.plugin.StartupPlugin,
@@ -20,14 +22,29 @@ class WebNotificationsPlugin(octoprint.plugin.StartupPlugin,
             js=["js/webnotifications.js"],
         )
     
+    def get_template_vars(self):
+        return dict(
+            public_key=self.get_public_key()
+        )
+    
     @octoprint.plugin.BlueprintPlugin.route("/push-subscription", methods=["POST"])
     def save_push_subscription(self):
         from flask import request
         from octoprint.server.api import NO_CONTENT
 
-        subscription = request.get_json()
-
-        self._logger.info("NEW SUB!!!!!!!!!!!!!!!!!!!!!!!!! %s" % subscription['endpoint'])
+        subscription = 
+        
+        webpush(
+            subscription_info=request.get_json(),
+            data=json.dump(
+                a="hello world"
+            ),
+            vapid_private_key=self.get_private_key(),
+            vapid_claims=dict(
+                sub="mailto:jcbelanger@users.noreply.github.com"
+            )
+        )
+        
         return NO_CONTENT
 
     def is_blueprint_protected(self):
@@ -45,6 +62,15 @@ class WebNotificationsPlugin(octoprint.plugin.StartupPlugin,
 				pip="https://github.com/jcbelanger/OctoPrint-WebNotifications/archive/{target_version}.zip"
 			)
 		)
+        
+    def get_public_key(self):
+        #todo generate keys on install
+        return "BBDoBnbKU0ex3GwNprJ0xuOhWCCU5ImO3lexrPpIv2-dUHDn-BtCJMXzf-J32Y1YpPKRyRhVx8tknmLf9bmQn28"
+
+    def get_private_key(self):
+        #todo generate keys on install
+        return "1Kx0uosM1wWXXEzJnJSNL0UkNJZhIzk_tnZTB0Zdy1E"
+
 
 
 def __plugin_load__():
@@ -53,5 +79,5 @@ def __plugin_load__():
 
 	global __plugin_hooks__
 	__plugin_hooks__ = {
-		"octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information
+		#"octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information
 	}

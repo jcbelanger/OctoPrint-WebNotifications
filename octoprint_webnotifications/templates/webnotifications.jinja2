@@ -1,7 +1,8 @@
 <script lang="javascript">
   window.WebNotifications = {
+    VAPID_PUBLIC_KEY: "{{ plugin_webnotifications_public_key }}",
     SERVICE_WORKER_JS: "{{ url_for('plugin.webnotifications.static', filename='js/serviceworker.js') }}",
-    VAPID_PUBLIC_KEY: "BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U",
     SAVE_PUSH_SUBSCRIPTION: "{{ url_for('plugin.webnotifications.save_push_subscription') }}",
   };
+  
 </script>
