@@ -31,14 +31,12 @@ class WebNotificationsPlugin(octoprint.plugin.StartupPlugin,
     def save_push_subscription(self):
         from flask import request
         from octoprint.server.api import NO_CONTENT
-
-        subscription = 
         
         webpush(
             subscription_info=request.get_json(),
-            data=json.dump(
-                a="hello world"
-            ),
+            data=json.dumps(dict(
+                foo="bar"
+            )),
             vapid_private_key=self.get_private_key(),
             vapid_claims=dict(
                 sub="mailto:jcbelanger@users.noreply.github.com"
