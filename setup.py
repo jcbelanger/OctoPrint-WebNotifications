@@ -37,10 +37,10 @@ plugin_requires = [
     'OctoPrint',
     'flask',
     'pywebpush>=1.2.0,<2',
+    'py-vapid>=1.2.5,<2',
     'cryptography>=1.8.2,<1.10',
-    'http-ece>=1.0.1',
-    'requests>=2.13.0',
-    'py-vapid>=1.2.5',
+    'http-ece>=1.0.1,<2',
+    'requests>=2.13.0,<3',
     'ecdsa==0.13',
 ]
 
