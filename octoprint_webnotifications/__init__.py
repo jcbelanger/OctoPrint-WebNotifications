@@ -15,14 +15,12 @@ class WebNotificationsPlugin(octoprint.plugin.StartupPlugin,
     def on_startup(self, host, port):
         self._vapid = Vapid.from_file(self.get_vapid_key_file())
         self._db = sqlite3.connect(self.get_database_file())
-        self._db.executescript(
-            '''
+        self._db.executescript('''
             CREATE TABLE IF NOT EXISTS subscriptions (
                 id TEXT NOT NULL PRIMARY KEY,
                 subscription TEXT NOT NULL
-            );
-            '''
-        )
+            )
+        ''')
         self._db.commit()
     
     def on_shutdown(self):
@@ -53,7 +51,13 @@ class WebNotificationsPlugin(octoprint.plugin.StartupPlugin,
         subscription = request.get_json()
         id = subscription["endpoint"]
         self.save_push_subscription_db(id, subscription)
-        self.notify_one(id, title="Test Notification", body="It works!")
+        self.notify_one(
+            id=id, 
+            notification_title="Test Notification", 
+            notification_options=dict(
+                body="It works!"
+            )
+        )
         
         return NO_CONTENT
     
@@ -79,28 +83,43 @@ class WebNotificationsPlugin(octoprint.plugin.StartupPlugin,
     def get_push_subscription_db(self, id):
         with closing(self._db.cursor()) as cur:
             cur.execute("SELECT subscription FROM subscriptions WHERE id = ?", (id,))
-            result = cur.fetchone()
-            subscription = result[0]
+            subscription = cur.fetchone()[0]
             return json.loads(subscription)
     
-    def get_web_push_args(self, *args, **kwargs):
-        notification = dict(
-            title="OctoPrint",
-            lang="en",
+    def get_web_push_args(self, notification_title=None, notification_options=None, vapid_claims=None):
+        if notification_title is None:
+            notification_title = "OctoPrint"
+        
+        notification_options_defaults = dict(
             icon="/static/img/graph-background.png",
             timestamp=time.time(),
         )
-        notification.update(kwargs)
+        if notification_options is None:
+            notification_options = notification_options_defaults
+        else:
+            notification_options_defaults.update(notification_options)
+            notification_options = notification_options_defaults
+        
+        vapid_claims_defaults = dict(
+            sub="mailto:jcbelanger@users.noreply.github.com"
+        )
+        if vapid_claims is None:
+            vapid_claims = vapid_claims_defaults
+        else:
+            vapid_claims_defaults.update(vapid_claims)
+            vapid_claims = vapid_claims_defaults
+        
         return dict(
-            data=json.dumps(notification),
             vapid_private_key=self.get_vapid_key_file(),
-            vapid_claims=dict(
-                sub="mailto:jcbelanger@users.noreply.github.com"
-            )
+            vapid_claims=vapid_claims,
+            data=json.dumps(dict(
+                title=notification_title,
+                options=notification_options
+            )),
         )
         
-    def notify_one(self, id, *args, **kwargs):
-        web_push_args = self.get_web_push_args(*args, **kwargs)
+    def notify_one(self, id, notification_title=None, notification_options=None, vapid_claims=None):
+        web_push_args = self.get_web_push_args(notification_title, notification_options, vapid_claims)
         sub = self.get_push_subscription_db(id)
         try:
             webpush(subscription_info=sub, **web_push_args)
@@ -109,9 +128,8 @@ class WebNotificationsPlugin(octoprint.plugin.StartupPlugin,
             self._logger.error(err)
             return False
         
-    
     def notify_all(self, *args, **kwargs):
-        web_push_args = self.get_web_push_args(*args, **kwargs)
+        web_push_args = self.get_web_push_args(notification_title, notification_options, vapid_claims)
         all_success = True
         with self.get_push_subscriptions_db() as subs:
             for sub in subs:
