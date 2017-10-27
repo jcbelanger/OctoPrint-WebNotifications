@@ -16,7 +16,8 @@
 	}
 
 	function serviceWorkerReady() {
-		return navigator.serviceWorker.register(WebNotifications.SERVICE_WORKER_JS)
+		var scope = WebNotifications.SERVICE_WORKER_SCOPE;
+		return navigator.serviceWorker.register(scope + "serviceworker.js", {scope: scope})
 			.then(function(registration) {
 				return registration; //TODO find workaround for chrome's navigator.serviceWorker.ready
 			})

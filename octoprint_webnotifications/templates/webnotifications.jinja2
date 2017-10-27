@@ -1,7 +1,7 @@
-<script lang="javascript">
+<script>
   this.WebNotifications = {
     APPLICATION_SERVER_KEY: "{{ plugin_webnotifications_application_server_key }}",
-    SERVICE_WORKER_JS: "{{ url_for('plugin.webnotifications.static', filename='js/serviceworker.js') }}",
+	SERVICE_WORKER_SCOPE: "{{ url_for('plugin.webnotifications.static', filename='js/') }}",
     SAVE_PUSH_SUBSCRIPTION: "{{ url_for('plugin.webnotifications.save_push_subscription') }}",
   };
 </script>
