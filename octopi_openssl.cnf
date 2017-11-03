@@ -1,0 +1,19 @@
+[req]
+default_bits = 2048
+prompt = no
+default_md = sha256
+req_extensions = req_ext
+distinguished_name = dn
+
+[dn]
+C=US
+CN=octopi.local
+O=None
+
+[req_ext]
+subjectAltName = @alt_names
+
+[alt_names]
+DNS.1 = octopi.local
+IP.1 = 192.168.1.126
+IP.2 = 76.179.253.222
