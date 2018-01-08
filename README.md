@@ -22,9 +22,9 @@ Web browsers will only offer web notifications if your OctoPrint instance is ser
 1. Create a user for OctoPrint.  It would be irresponsible to expose your OctoPrint instance to the public without any authentication.
 2. Configure your home router to forward TCP traffic on ports 80 and 443 to your OctoPrint instance.
 3. Register a domain pointing to your home router.  There a number of services that offer free domains.  
-4. Use LetsEncrypt to generate a free https certificate for your domain.  I've included `le.sh` for this purpose.  For example if your domain was `mypi.com`, you would run the script as 
-    
-    `./le.sh mypi.com`
+4. Use LetsEncrypt to generate a free https certificate for your domain.  I've included `le.sh` for this purpose.  For example if your domain was `mypi.com`, you would run the script as `./le.sh mypi.com`
+5. Visit your domain via https.
+6. Accept the browser's permission request for push notifications.  You will need to [re-enable the permission](https://www.howtogeek.com/188241/how-to-modify-permissions-for-individual-websites-in-all-browsers/) if you accidentally reject the permission request.
 
 ## Overview of le.sh
 
@@ -36,7 +36,7 @@ Web browsers will only offer web notifications if your OctoPrint instance is ser
 6. TODO: I need to create a cron job to automatically renew the certifiacte -- This isn't a problem for most home users as the certificate only needs to be valid once for the browser to allow push notifications.
 
 
-## Gotchas
+## Troubleshooting
 
-* You may need to clear your cache before your browser begins to recognize the new certificate.
-* You may need to re-enable push notifications for the site if you accidientally disallow the site's permission request.
+* You may need to [clear your browser's cache](https://kb.iu.edu/d/ahic) before your browser discovers the new certificate.
+* You may need to [re-enable push notifications for the site](https://www.howtogeek.com/188241/how-to-modify-permissions-for-individual-websites-in-all-browsers/) if you accidientally reject the site's permission request.
