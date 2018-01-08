@@ -11,7 +11,7 @@ or manually using this URL:
 
 ## Secure Origin
 
-Web browsers will only offer web notifications if your OctoPrint instance is served from a "secure origin"!  Examples of secure origins are `localhost` and websites served through https with valid certificates.  For OctoPi users, this means the default self-signed certificate will not work!  The basic steps for serving your home OctoPi instance from a secure origin are:
+Web browsers will only offer web notifications if your OctoPrint instance is served from a **secure origin**!  Examples of secure origins are *localhost* and websites served through https with *valid* certificates.  For OctoPi users, this means the default self-signed certificate will *not* work!  The basic steps for serving your home OctoPi instance from a secure origin are:
 
 1. Create a user for OctoPrint.  It would be irresponsible to expose your OctoPrint instance to the public without any authentication.
 2. Configure your home router to forward TCP traffic on ports 80 and 443 to your OctoPrint instance.
