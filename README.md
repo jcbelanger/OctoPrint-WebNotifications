@@ -16,9 +16,9 @@ Web browsers will only offer web notifications if your OctoPrint instance is ser
 1. Create a user for OctoPrint.  It would be irresponsible to expose your OctoPrint instance to the public without any authentication.
 2. Configure your home router to forward TCP traffic on ports 80 and 443 to your OctoPrint instance.
 3. Register a domain pointing to your home router.  There a number of services that offer free domains.  
-4. Use LetsEncrypt to generate a free https certificate for your domain.  I've included `le.sh` for this purpose.  For example if your domain was `mypi.ga`, you would run the script as 
+4. Use LetsEncrypt to generate a free https certificate for your domain.  I've included `le.sh` for this purpose.  For example if your domain was `mypi.com`, you would run the script as 
     
-    `./le.sh mypi.ga`
+    `./le.sh mypi.com`
 
 ## Overview of le.sh
 
