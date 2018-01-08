@@ -6,6 +6,8 @@ The advantage of HTML5 Web Push Notifications is no 3rd party service needs to b
 
 ## Setup
 
+Due to dependency clashes with older versions of OctoPrint's dependencies, this plugin requires at least verions 1.3.5 of OctoPrint.
+
 Install via the bundled [Plugin Manager](https://github.com/foosel/OctoPrint/wiki/Plugin:-Plugin-Manager)
 or manually using this URL:
 
