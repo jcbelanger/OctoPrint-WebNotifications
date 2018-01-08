@@ -1,6 +1,8 @@
 # OctoPrint-WebNotifications
 
-This plugin provides HTML5 Web Push Notifications for OctoPrint completed jobs.  This allows you to recieve web push notifications where Web Push Notifications are implemented, see [browser support for Push API](https://caniuse.com/#feat=push-api).  Android and most desktop browsers implement this service, while notably iPhone does not yet support it.  However, [progress is being made](https://webkit.org/status/#specification-service-workers) and when completed, this plugin should work there as well.
+This plugin provides HTML5 Web Push Notifications for OctoPrint completed jobs.  This allows you to recieve web push notifications where Web Push Notifications are implemented, see [browser support for Push API](https://caniuse.com/#feat=push-api).  Android and most desktop browsers implement this service, while notably iPhone does not yet support it.  However, [progress is being made](https://webkit.org/status/#specification-service-workers) and when completed, this plugin should work there as well.  
+
+The advantage of HTML5 Web Push Notifications is no 3rd party service needs to be installed on your device to recieve push notifications!  However, you may need to configure your OctoPrint instance to be served from a **secure origin** if it is not already.  See below for details.
 
 ## Setup
 
@@ -8,7 +10,11 @@ Install via the bundled [Plugin Manager](https://github.com/foosel/OctoPrint/wik
 or manually using this URL:
 
     https://github.com/jcbelanger/OctoPrint-WebNotifications/archive/master.zip
+    
+OctoPi users may should be sure to use the correct python installation if installing from the command line:
 
+    /home/pi/oprint/bin/python -m pip install https://github.com/jcbelanger/OctoPrint-WebNotifications/archive/master.zip
+    
 ## Secure Origin
 
 Web browsers will only offer web notifications if your OctoPrint instance is served from a **secure origin**!  Examples of secure origins are *localhost* and websites served through https with *valid* certificates.  For OctoPi users, this means the default self-signed certificate will *not* work!  The basic steps for serving your home OctoPi instance from a secure origin are:
