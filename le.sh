@@ -31,8 +31,8 @@ if ! [ -x "$(command -v certbot)" ]; then
 	echo "Installed certbot from jessie-backports!"
 fi
 
-
-if false; then
+#TODO check for existing cert before registering
+if true; then
 	echo "Registering $DOMAIN with letsencrypt..."
 	
 	#We stop haproxy to run the certbot as a acme server on port 80
