@@ -34,7 +34,7 @@ plugin_license = "AGPLv3"
 
 # Any additional requirements besides OctoPrint should be listed here
 plugin_requires = [
-    'OctoPrint',
+    'OctoPrint>=1.3.5',
     'flask',
     'pywebpush>=1.2.0,<2',
     'py-vapid>=1.2.5,<2',
