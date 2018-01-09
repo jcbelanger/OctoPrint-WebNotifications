@@ -13,7 +13,7 @@ or manually using this URL:
 
     https://github.com/jcbelanger/OctoPrint-WebNotifications/archive/master.zip
     
-OctoPi users may should be sure to use the correct python installation if installing from the command line:
+OctoPi users installing via pip should be sure to use the correct python installation:
 
     /home/pi/oprint/bin/python -m pip install https://github.com/jcbelanger/OctoPrint-WebNotifications/archive/master.zip
     
