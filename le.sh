@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+set -e -o pipefail
 
 
 if [ $# -ne 1 ]; then
@@ -11,60 +11,64 @@ DOMAIN=$1
 
 
 if ! [ -x "$(command -v certbot)" ]; then
-	echo "Installing certbot from jessie-backports..."
-	
-	BACK_PORTS="deb http://ftp.debian.org/debian jessie-backports main"
 	SOURCES="/etc/apt/sources.list.d/raspi.list"
-	if ! grep --quiet "^$BACK_PORTS" $SOURCES /etc/apt/sources.list.d/*; then
-		echo "Adding jessie-backports"
-		echo "$BACK_PORTS" >> $SOURCES
+	
+	#Raspbian fix.  See https://github.com/certbot/certbot/issues/2673 for details
+	RASPBIAN_TESTING="deb http://mirrordirector.raspbian.org/raspbian/ testing main contrib non-free rpi"
+	if ! grep --quiet "^$RASPBIAN_TESTING" /etc/apt/sources.list /etc/apt/sources.list.d/*.list; then
+		echo "Applying fix for raspbian certbot install"
+		echo "$RASPBIAN_TESTING" >> /etc/apt/sources.list
 	fi
 
+	echo "Installing certbot..."
 	apt-get update
 	apt-get install \
 		--no-install-recommends \
 		--assume-yes \
 		--force-yes \
-		--target-release jessie-backports \
 		certbot
-	
-	echo "Installed certbot from jessie-backports!"
+	echo "Installed certbot!"
 fi
 
-#TODO check for existing cert before registering
-if true; then
-	echo "Registering $DOMAIN with letsencrypt..."
-	
-	#We stop haproxy to run the certbot as a acme server on port 80
-	#TODO update haproxy config to forward acme requests to certbot
-	service haproxy stop
-	
-	certbot certonly \
-		--standalone \
-		--agree-tos \
-		--non-interactive \
-		--register-unsafely-without-email \
-		--domain $DOMAIN \
-		--domain www.$DOMAIN \
-		--preferred-challenges http \
-		--http-01-port 80
 
-	service haproxy start
-	
-	echo "Registered $DOMAIN with letsencrypt!"
-fi
+#We stop haproxy to run the certbot as a acme server on port 80
+#TODO update haproxy config to forward acme requests to certbot so we can avoid downtime
+echo "Stopping haproxy..."
+service haproxy stop
+echo "haproxy stopped!"
+
+
+echo "Registering $DOMAIN with letsencrypt..."
+certbot certonly \
+	--standalone \
+	--agree-tos \
+	--non-interactive \
+	--register-unsafely-without-email \
+	--domain $DOMAIN \
+	--domain www.$DOMAIN \
+	--preferred-challenges http \
+	--http-01-port 80
+echo "Registered $DOMAIN with letsencrypt!"
 
 
 #TODO modify haproxy config instead of overwriting the included octopi self signed cert
-HAPROXY_CERT="/etc/ssl/snakeoil.pem"
+SELF_SIGNED_CERT="/etc/ssl/snakeoil.pem"
 LETS_ENCRYPT_CERT="/etc/letsencrypt/live/$DOMAIN/fullchain.pem"
 LETS_ENCRYPT_PRIV_KEY="/etc/letsencrypt/live/$DOMAIN/privkey.pem"
-if [ -f $LETS_ENCRYPT_CERT] && [ -f $LETS_ENCRYPT_CERT]; then
-	echo "Applying letsencrypt cert to haproxy..."
-	rm --force $HAPROXY_CERT
-	cat $LETS_ENCRYPT_CERT  $LETS_ENCRYPT_PRIV_KEY > $HAPROXY_CERT
-	service haproxy reload
+if [ -f $LETS_ENCRYPT_CERT ] && [ -f $LETS_ENCRYPT_CERT ]; then
+	echo "Overwriting the self-signed cert with one from letsencrypt..."
+	rm --force $SELF_SIGNED_CERT
+	cat $LETS_ENCRYPT_CERT  $LETS_ENCRYPT_PRIV_KEY > $SELF_SIGNED_CERT
+	echo "Overwrote the self-signed cert with one from letsencrypt!"
 fi
 
 
+echo "Starting haproxy..."
+service haproxy start
+echo "haproxy started!"
+
+
 #TODO create cronjob to autorenew cert
+
+
+echo "You should now open your browser to https://$DOMAIN to view the website"
