@@ -33,7 +33,7 @@ Web browsers will only offer web notifications if your OctoPrint instance is ser
 1. The script will install LetsEncrypt's certbot tool. 
 2. It will then temporarily stop OctoPi's HAProxy for certbot. 
 3. Certbot will request a new certificate for your domain by answering Let's Encrypt's validation challenges.
-4. It will then overwrite the existing self-signed cert with the certificate from letsencrypt.  (TODO: It should configure HAProxy).  
+4. It will then overwrite the existing self-signed cert with the certificate from letsencrypt.
 5. It will then restart HAProxy to enable the new cert.
 6. TODO: I need to create a cron job to automatically renew the certifiacte -- This isn't a problem for most home users as the certificate only needs to be valid once for the browser to allow push notifications.
 
