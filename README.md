@@ -21,16 +21,16 @@ OctoPi users may should be sure to use the correct python installation if instal
 
 Web browsers will only offer web notifications if your OctoPrint instance is served from a **secure origin**!  Examples of secure origins are *localhost* and websites served through https with *valid* certificates.  For OctoPi users, this means the default self-signed certificate will *not* work!  The basic steps for serving your home OctoPi instance from a secure origin are:
 
-1. Create a user for OctoPrint.  It would be irresponsible to expose your OctoPrint instance to the public without any authentication.
-2. Configure your home router to forward TCP traffic on ports 80 and 443 to your OctoPrint instance.
+1. Be sure access control is enabled and you have created a user for OctoPrint's web interface.  It would be irresponsible to expose your OctoPrint instance to the public without any authentication.
+2. Configure your home router to forward traffic on ports 80 and 443 to your OctoPrint instance.
 3. Register a domain pointing to your home router.  There a number of services that offer free domains.  
-4. Use LetsEncrypt to generate a free https certificate for your domain.  I've included [`le.sh`](https://github.com/jcbelanger/OctoPrint-WebNotifications/blob/master/le.sh) for this purpose.  For example if your domain was `mypi.com`, you would run the script as `sudo ./le.sh mypi.com`.  OctoPi users comfortable with running the script with admin rights can exectue the script with `curl -s https://raw.githubusercontent.com/jcbelanger/OctoPrint-WebNotifications/master/le.sh | sudo bash -s mypi.com` where `mypi.com` is your domain.
-5. Visit your domain via https.
-6. Accept the browser's permission request for push notifications.  You will need to [re-enable the permission](https://www.howtogeek.com/188241/how-to-modify-permissions-for-individual-websites-in-all-browsers/) if you accidentally reject the permission request.
+4. Use LetsEncrypt to generate a free https certificate for your domain.  I've included [`le.sh`](https://github.com/jcbelanger/OctoPrint-WebNotifications/blob/master/le.sh) for this purpose.  For example, if your domain was `mypi.com`, you would run the script as `sudo ./le.sh mypi.com`.  OctoPi users comfortable with running the script with admin rights directly from this repository can do so with `curl -s https://raw.githubusercontent.com/jcbelanger/OctoPrint-WebNotifications/master/le.sh | sudo bash -s mypi.com` where `mypi.com` is your domain.
+5. Visit your domain via *https*.  For example *https://mypi.com* .
+6. Accept the browser's permission request for push notifications.  You may need to [re-enable the permission](https://www.howtogeek.com/188241/how-to-modify-permissions-for-individual-websites-in-all-browsers/) if you accidentally reject the permission request.
 
-## Overview of le.sh
+## Overview of [`le.sh`](https://github.com/jcbelanger/OctoPrint-WebNotifications/blob/master/le.sh)
 
-1. The `le.sh` script will install LetsEncrypt's certbot tool. 
+1. The script will install LetsEncrypt's certbot tool. 
 2. It will then temporarily stop OctoPi's HAProxy for certbot. 
 3. Certbot will request a new certificate for your domain by answering Let's Encrypt's validation challenges.
 4. It will then overwrite the existing self-signed cert with the certificate from letsencrypt.  (TODO: It should configure HAProxy).  
