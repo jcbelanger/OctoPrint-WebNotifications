@@ -26,7 +26,7 @@ if ! [ -x "$(command -v certbot)" ]; then
 		--no-install-recommends \
 		--assume-yes \
 		--force-yes \
- -		--target-release testing \
+		--target-release testing \
 		certbot
 	echo "Installed certbot!"
 fi
